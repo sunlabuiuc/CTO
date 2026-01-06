@@ -23,15 +23,31 @@ LINKAGE_PATH="/srv/local/data/CTO/outcome_labels/Merged_all_trial_linkage_outcom
 STUDIES_WITH_NEWS_PATH="/srv/local/data/CTO/outcome_labels/news_lfs.csv"
 CTO_GOLD_PATH="/srv/local/data/CTO/outcome_labels/final_cto_labels_2020_2024.csv"
 
-# pass in --get_thresholds to get thresholds for first run, then remove it for subsequent runs. It logs the thresholds to a csv file, which is then used in the subsequent runs.
+## ================= run labeling functions =================
+# # first run RF with --get_thresholds to get thresholds, then run RF/DP
 label_mode="RF"
 python labeling/lfs.py --get_thresholds=True --LF_EACH_THRESH_PATH=$LF_EACH_THRESH_PATH --CTTI_PATH=$CTTI_PATH --HINT_PATH=$HINT_PATH --LABELS_AND_TICKERS_PATH=$LABELS_AND_TICKERS_PATH --GPT_PATH=$GPT_PATH --LINKAGE_PATH=$LINKAGE_PATH --STUDIES_WITH_NEWS_PATH=$STUDIES_WITH_NEWS_PATH --label_mode=$label_mode --CTO_GOLD_PATH=$CTO_GOLD_PATH
-# python labeling/lfs.py --LF_EACH_THRESH_PATH=$LF_EACH_THRESH_PATH --CTTI_PATH=$CTTI_PATH --HINT_PATH=$HINT_PATH --LABELS_AND_TICKERS_PATH=$LABELS_AND_TICKERS_PATH --GPT_PATH=$GPT_PATH --LINKAGE_PATH=$LINKAGE_PATH --STUDIES_WITH_NEWS_PATH=$STUDIES_WITH_NEWS_PATH --label_mode=$label_mode --CTO_GOLD_PATH=$CTO_GOLD_PATH
-label_mode="LR"
-python labeling/lfs.py --LF_EACH_THRESH_PATH=$LF_EACH_THRESH_PATH --CTTI_PATH=$CTTI_PATH --HINT_PATH=$HINT_PATH --LABELS_AND_TICKERS_PATH=$LABELS_AND_TICKERS_PATH --GPT_PATH=$GPT_PATH --LINKAGE_PATH=$LINKAGE_PATH --STUDIES_WITH_NEWS_PATH=$STUDIES_WITH_NEWS_PATH --label_mode=$label_mode --CTO_GOLD_PATH=$CTO_GOLD_PATH
-label_mode="SVM"
-python labeling/lfs.py --LF_EACH_THRESH_PATH=$LF_EACH_THRESH_PATH --CTTI_PATH=$CTTI_PATH --HINT_PATH=$HINT_PATH --LABELS_AND_TICKERS_PATH=$LABELS_AND_TICKERS_PATH --GPT_PATH=$GPT_PATH --LINKAGE_PATH=$LINKAGE_PATH --STUDIES_WITH_NEWS_PATH=$STUDIES_WITH_NEWS_PATH --label_mode=$label_mode --CTO_GOLD_PATH=$CTO_GOLD_PATH
 # label_mode="DP"
 # python labeling/lfs.py --LF_EACH_THRESH_PATH=$LF_EACH_THRESH_PATH --CTTI_PATH=$CTTI_PATH --HINT_PATH=$HINT_PATH --LABELS_AND_TICKERS_PATH=$LABELS_AND_TICKERS_PATH --GPT_PATH=$GPT_PATH --LINKAGE_PATH=$LINKAGE_PATH --STUDIES_WITH_NEWS_PATH=$STUDIES_WITH_NEWS_PATH --label_mode=$label_mode --CTO_GOLD_PATH=$CTO_GOLD_PATH
-# label_mode="DP_nohint"
+# label_mode="MV"
+# python labeling/lfs.py --LF_EACH_THRESH_PATH=$LF_EACH_THRESH_PATH --CTTI_PATH=$CTTI_PATH --HINT_PATH=$HINT_PATH --LABELS_AND_TICKERS_PATH=$LABELS_AND_TICKERS_PATH --GPT_PATH=$GPT_PATH --LINKAGE_PATH=$LINKAGE_PATH --STUDIES_WITH_NEWS_PATH=$STUDIES_WITH_NEWS_PATH --label_mode=$label_mode --CTO_GOLD_PATH=$CTO_GOLD_PATH
+
+## ================= ablations experiments =================
+# python labeling/lfs.py --LF_EACH_THRESH_PATH=$LF_EACH_THRESH_PATH --CTTI_PATH=$CTTI_PATH --HINT_PATH=$HINT_PATH --LABELS_AND_TICKERS_PATH=$LABELS_AND_TICKERS_PATH --GPT_PATH=$GPT_PATH --LINKAGE_PATH=$LINKAGE_PATH --STUDIES_WITH_NEWS_PATH=$STUDIES_WITH_NEWS_PATH --label_mode=$label_mode --CTO_GOLD_PATH=$CTO_GOLD_PATH --SAVE_PATH='/home/chufan2/github/CTOD/ablations/all/'
+# label_mode="RF"
+# python labeling/lfs.py --LF_EACH_THRESH_PATH=$LF_EACH_THRESH_PATH --CTTI_PATH=$CTTI_PATH --HINT_PATH=$HINT_PATH --LABELS_AND_TICKERS_PATH=$LABELS_AND_TICKERS_PATH --GPT_PATH=$GPT_PATH --LINKAGE_PATH=$LINKAGE_PATH --STUDIES_WITH_NEWS_PATH=$STUDIES_WITH_NEWS_PATH --label_mode=$label_mode --CTO_GOLD_PATH=$CTO_GOLD_PATH --SAVE_PATH='/home/chufan2/github/CTOD/ablations/no_hint/' --SKIP_LIST="['hint_train2', 'hint_train3']"
+# label_mode="RF"
+# python labeling/lfs.py --get_thresholds=True --LF_EACH_THRESH_PATH=$LF_EACH_THRESH_PATH --CTTI_PATH=$CTTI_PATH --HINT_PATH=$HINT_PATH --LABELS_AND_TICKERS_PATH=$LABELS_AND_TICKERS_PATH --GPT_PATH=$GPT_PATH --LINKAGE_PATH=$LINKAGE_PATH --STUDIES_WITH_NEWS_PATH=$STUDIES_WITH_NEWS_PATH --label_mode=$label_mode --CTO_GOLD_PATH=$CTO_GOLD_PATH --SAVE_PATH='/home/chufan2/github/CTOD/ablations/no_news/' --SKIP_LIST="['hint_train2', 'hint_train3', 'new_headlines']"
+# label_mode="RF"
+# python labeling/lfs.py --LF_EACH_THRESH_PATH=$LF_EACH_THRESH_PATH --CTTI_PATH=$CTTI_PATH --HINT_PATH=$HINT_PATH --LABELS_AND_TICKERS_PATH=$LABELS_AND_TICKERS_PATH --GPT_PATH=$GPT_PATH --LINKAGE_PATH=$LINKAGE_PATH --STUDIES_WITH_NEWS_PATH=$STUDIES_WITH_NEWS_PATH --label_mode=$label_mode --CTO_GOLD_PATH=$CTO_GOLD_PATH --SAVE_PATH='/home/chufan2/github/CTOD/ablations/no_stocks/' --SKIP_LIST="['hint_train2', 'hint_train3','stock_price']"
+# label_mode="RF"
+# python labeling/lfs.py --LF_EACH_THRESH_PATH=$LF_EACH_THRESH_PATH --CTTI_PATH=$CTTI_PATH --HINT_PATH=$HINT_PATH --LABELS_AND_TICKERS_PATH=$LABELS_AND_TICKERS_PATH --GPT_PATH=$GPT_PATH --LINKAGE_PATH=$LINKAGE_PATH --STUDIES_WITH_NEWS_PATH=$STUDIES_WITH_NEWS_PATH --label_mode=$label_mode --CTO_GOLD_PATH=$CTO_GOLD_PATH --SAVE_PATH='/home/chufan2/github/CTOD/ablations/no_news_stocks/' --SKIP_LIST="['hint_train2', 'hint_train3','stock_price', 'new_headlines']"
+# label_mode="RF"
+# python labeling/lfs.py --LF_EACH_THRESH_PATH=$LF_EACH_THRESH_PATH --CTTI_PATH=$CTTI_PATH --HINT_PATH=$HINT_PATH --LABELS_AND_TICKERS_PATH=$LABELS_AND_TICKERS_PATH --GPT_PATH=$GPT_PATH --LINKAGE_PATH=$LINKAGE_PATH --STUDIES_WITH_NEWS_PATH=$STUDIES_WITH_NEWS_PATH --label_mode=$label_mode --CTO_GOLD_PATH=$CTO_GOLD_PATH --SAVE_PATH='/home/chufan2/github/CTOD/ablations/no_news_stocks_gpt/' --SKIP_LIST="['hint_train2', 'hint_train3','stock_price', 'new_headlines','gpt','gpt2']"
+# label_mode="RF"
+# python labeling/lfs.py --LF_EACH_THRESH_PATH=$LF_EACH_THRESH_PATH --CTTI_PATH=$CTTI_PATH --HINT_PATH=$HINT_PATH --LABELS_AND_TICKERS_PATH=$LABELS_AND_TICKERS_PATH --GPT_PATH=$GPT_PATH --LINKAGE_PATH=$LINKAGE_PATH --STUDIES_WITH_NEWS_PATH=$STUDIES_WITH_NEWS_PATH --label_mode=$label_mode --CTO_GOLD_PATH=$CTO_GOLD_PATH --SAVE_PATH='/home/chufan2/github/CTOD/ablations/no_news_stocks_gpt_linkage/' --SKIP_LIST="['hint_train2', 'hint_train3','stock_price', 'new_headlines','gpt','gpt2', 'linkage','linkage2']"
+# # python labeling/lfs.py --LF_EACH_THRESH_PATH=$LF_EACH_THRESH_PATH --CTTI_PATH=$CTTI_PATH --HINT_PATH=$HINT_PATH --LABELS_AND_TICKERS_PATH=$LABELS_AND_TICKERS_PATH --GPT_PATH=$GPT_PATH --LINKAGE_PATH=$LINKAGE_PATH --STUDIES_WITH_NEWS_PATH=$STUDIES_WITH_NEWS_PATH --label_mode=$label_mode --CTO_GOLD_PATH=$CTO_GOLD_PATH
+# label_mode="LR"
+# python labeling/lfs.py --LF_EACH_THRESH_PATH=$LF_EACH_THRESH_PATH --CTTI_PATH=$CTTI_PATH --HINT_PATH=$HINT_PATH --LABELS_AND_TICKERS_PATH=$LABELS_AND_TICKERS_PATH --GPT_PATH=$GPT_PATH --LINKAGE_PATH=$LINKAGE_PATH --STUDIES_WITH_NEWS_PATH=$STUDIES_WITH_NEWS_PATH --label_mode=$label_mode --CTO_GOLD_PATH=$CTO_GOLD_PATH
+# label_mode="SVM"
 # python labeling/lfs.py --LF_EACH_THRESH_PATH=$LF_EACH_THRESH_PATH --CTTI_PATH=$CTTI_PATH --HINT_PATH=$HINT_PATH --LABELS_AND_TICKERS_PATH=$LABELS_AND_TICKERS_PATH --GPT_PATH=$GPT_PATH --LINKAGE_PATH=$LINKAGE_PATH --STUDIES_WITH_NEWS_PATH=$STUDIES_WITH_NEWS_PATH --label_mode=$label_mode --CTO_GOLD_PATH=$CTO_GOLD_PATH

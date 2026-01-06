@@ -260,7 +260,8 @@ def get_lfs(lf_each_thresh_path,
             LINKAGE_PATH,
             LABELS_AND_TICKERS_PATH,
             STUDIES_WITH_NEWS_PATH,
-            no_hint=False):
+            no_hint=False,
+            skip_list=None):
     lf_thresh_df = pd.read_csv(lf_each_thresh_path, low_memory=False).sort_values(['lf', 'phase','acc'], ascending=False).astype(str)
     lf_thresh_df['best_thresh'] = 0
     for lf in lf_thresh_df['lf'].unique():
@@ -282,6 +283,13 @@ def get_lfs(lf_each_thresh_path,
 
     known_lfs_list = [hint_lf,hint_lf,hint_lf, status_lf,status_lf, gpt_lf,gpt_lf, linkage_lf,linkage_lf, stock_price_lf, results_reported_lf, new_headlines_lf, pvalues_lf]
     df_names = ['hint_train', 'hint_train2', 'hint_train3', 'status','status2',  'gpt','gpt2', 'linkage','linkage2',  'stock_price', 'results_reported', 'new_headlines', 'pvalues']
+    if skip_list is not None:
+        inds = []
+        for i, name in enumerate(df_names):
+            if name not in skip_list:
+                inds.append(i)
+        df_names = [df_names[i] for i in inds]
+        known_lfs_list = [known_lfs_list[i] for i in inds]
     phase_dfs = []
     for phase in ['1', '2', '3']:
         phase_lfs = known_lfs_list.copy()
@@ -326,8 +334,15 @@ if __name__=='__main__':
     parser.add_argument('--CTO_GOLD_PATH', type=str, default='/srv/local/data/CTO/outcome_labels/final_cto_labels_2020_2024.csv"')
     parser.add_argument('--label_mode', type=str, default='DP')
     parser.add_argument('--get_thresholds', type=bool, default=False)
+    parser.add_argument('--SAVE_PATH', type=str, default="./")
+    parser.add_argument('--SKIP_LIST', type=str, default=None, help="List of lfs to skip, e.g. ['hint_train', 'status']")
     args = parser.parse_args()
     print(args)
+    if args.SKIP_LIST is not None:
+        args.SKIP_LIST = eval(args.SKIP_LIST) 
+        assert isinstance(args.SKIP_LIST, list), "SKIP_LIST should be a list of strings"
+        assert all(isinstance(x, str) for x in args.SKIP_LIST), "SKIP_LIST should contain only strings"
+        print(type(args.SKIP_LIST), args.SKIP_LIST)
 
     cto_gold = pd.read_csv(args.CTO_GOLD_PATH)
     cto_gold.rename(columns={'labels': 'label'}, inplace=True)
@@ -409,7 +424,7 @@ if __name__=='__main__':
         df.to_csv(args.LF_EACH_THRESH_PATH, index=False)
 
     # ==== load best thresholds ====
-    no_hint = True if args.label_mode != 'DP' else False
+    no_hint = True if args.label_mode != 'DP' else False # do not compute thresholds if not using DP
     df_list = get_lfs(lf_each_thresh_path=args.LF_EACH_THRESH_PATH,
                                  path=args.CTTI_PATH, 
                                  HINT_PATH=args.HINT_PATH,
@@ -417,7 +432,8 @@ if __name__=='__main__':
                                  LINKAGE_PATH=args.LINKAGE_PATH,
                                  LABELS_AND_TICKERS_PATH=args.LABELS_AND_TICKERS_PATH,
                                  STUDIES_WITH_NEWS_PATH=args.STUDIES_WITH_NEWS_PATH,
-                                 no_hint=no_hint)
+                                 no_hint=no_hint,
+                                 skip_list=args.SKIP_LIST)
     
 
     # ==== fit dp ====
@@ -469,6 +485,10 @@ if __name__=='__main__':
             label_model.fit(L[:,3:], class_balance=[1-positive_prop, positive_prop], seed=0, lr=lrs[i], n_epochs=300)
             label_model_pred_proba = label_model.predict_proba(L[:,3:])[:,1]
             label_model_pred = label_model.predict(L[:,3:])
+        elif args.label_mode == 'MV':
+            label_model = MajorityLabelVoter(cardinality=2)
+            label_model_pred_proba = label_model.predict_proba(L)[:,1]
+            label_model_pred = label_model.predict(L)
 
         # apply status lf
         status_lf = lf_status(path=args.CTTI_PATH)
@@ -486,6 +506,7 @@ if __name__=='__main__':
         print(df2['pred'].value_counts())
 
         df2['pred_proba'] = df2['pred']
+        df2['pred_proba'] = df2['pred_proba'].astype(float)
         mask = df2['pred'] == -1
 
         # apply labelmodel pred where pred == -1
@@ -519,7 +540,10 @@ if __name__=='__main__':
         cohen_kappa_score(combined['label'], combined['pred']))
     
     # save results
-    all_combined_full[0].to_csv(f'phase1_{args.label_mode.lower()}.csv', index=False)
-    all_combined_full[1].to_csv(f'phase2_{args.label_mode.lower()}.csv', index=False)
-    all_combined_full[2].to_csv(f'phase3_{args.label_mode.lower()}.csv', index=False)
+    if os.path.exists(args.SAVE_PATH) == False:
+        os.makedirs(args.SAVE_PATH)
+    combined.to_csv(os.path.join(args.SAVE_PATH, f'combined_eval_{args.label_mode.lower()}.csv'), index=False)
+    all_combined_full[0].to_csv(os.path.join(args.SAVE_PATH, f'phase1_{args.label_mode.lower()}.csv'), index=False)
+    all_combined_full[1].to_csv(os.path.join(args.SAVE_PATH, f'phase2_{args.label_mode.lower()}.csv'), index=False)
+    all_combined_full[2].to_csv(os.path.join(args.SAVE_PATH, f'phase3_{args.label_mode.lower()}.csv'), index=False)
 

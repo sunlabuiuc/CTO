@@ -16,6 +16,8 @@ import argparse
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--CTTI_PATH', type=str, default='../CTTI/')
+    parser.add_argument('--SAVE_PATH', type=str, default='./amendment_counts.csv')
+    parser.add_argument("--years", type=int, default=2, help="Number of years back to scrape amendments for")
     args = parser.parse_args()
         
     studies = pd.read_csv(os.path.join(args.CTTI_PATH, 'studies.txt'), sep='|')
@@ -28,12 +30,17 @@ if __name__ == '__main__':
 
     studies = studies.dropna(subset=['phase'])
 
+    # select only trials with start date within the last `years` years
+    current_year = time.localtime().tm_year
+    studies['start_year'] = pd.to_datetime(studies['start_date'], errors='coerce').dt.year
+    studies = studies[studies['start_year'] >= current_year - args.years]
+
     chrome_options = Options()
     chrome_options.add_argument("--headless") #FOR DEBUG COMMENT OUT SO YOU CAN SEE WHAT YOU'RE DOING
     driver = webdriver.Firefox(options=chrome_options)
 
     amendment_counts = []
-    for i, nct in enumerate(tqdm(studies['nct_id'].iloc[59525:])):
+    for i, nct in enumerate(tqdm(studies['nct_id'])):
         try:
             driver.get(f'https://clinicaltrials.gov/study/{nct}?tab=history')
             # driver.page_source # needs to be called before the next line
@@ -47,7 +54,7 @@ if __name__ == '__main__':
 
             if i % 100 == 0:
                 out_df = pd.DataFrame(amendment_counts, columns=['nct_id', 'amendment_count'])
-                out_df.to_csv('./amendment_counts.csv', index=False)
+                out_df.to_csv(os.path.join(args.SAVE_PATH), index=False)
         except Exception as e:
             print(f"Error for {nct}: {e}")
         # break    

@@ -54,13 +54,13 @@ SAVE_PATH=/shared/rsaas/CTO/andy
 # skip for now due to quota limits
 # python ./news_headlines/get_news.py --mode=get_news --continue_from_prev_log=True --CTTI_PATH=$DATA_PATH --SENTIMENT_MODEL="cardiffnlp/twitter-roberta-base-sentiment-latest" --SAVE_NEWS_LOG_PATH=$SAVE_PATH/news_headlines/ --SAVE_STUDY_NEWS_PATH=$SAVE_PATH/news.csv
 
-# # ========================= Stock prices =======================
-# echo "Updating stock prices and computing slopes"
-# # Ensure tickers.csv exists under SAVE_PATH (adjust path as needed)
-# python ./stock_price/get_stocks.py --CTTI_PATH $DATA_PATH --TICKERS_PATH ./stock_price/tickers.csv --SAVE_STOCKS_PATH $SAVE_PATH/stock_data.csv.zip --SAVE_STOCKS_SLOPES_PATH $SAVE_PATH/stock_labels.csv
+# ========================= Stock prices =======================
+echo "Updating stock prices and computing slopes"
+# Ensure tickers.csv exists under SAVE_PATH (adjust path as needed)
+python ./stock_price/get_stocks.py --CTTI_PATH $DATA_PATH --TICKERS_PATH ./stock_price/tickers.csv --SAVE_STOCKS_PATH $SAVE_PATH/stock_data.csv.zip --SAVE_STOCKS_SLOPES_PATH $SAVE_PATH/stock_labels.csv
 
-# ========================= Amendments ========================
-python ./stock_price/scrape_amendments.py --CTTI_PATH $DATA_PATH --SAVE_PATH $SAVE_PATH/amendment_counts.csv --years 2
+# # ========================= Amendments ========================
+# python ./stock_price/scrape_amendments.py --CTTI_PATH $DATA_PATH --SAVE_PATH $SAVE_PATH/amendment_counts.csv --years 2
 
 # # ========================= Lpdate :abels =================
 # python labeling/lfs.py --get_thresholds=True --LF_EACH_THRESH_PATH=$LF_EACH_THRESH_PATH --CTTI_PATH=$CTTI_PATH --HINT_PATH=$HINT_PATH --LABELS_AND_TICKERS_PATH=$LABELS_AND_TICKERS_PATH --GPT_PATH=$GPT_PATH --LINKAGE_PATH=$LINKAGE_PATH --STUDIES_WITH_NEWS_PATH=$STUDIES_WITH_NEWS_PATH --label_mode=$label_mode --CTO_GOLD_PATH=$CTO_GOLD_PATH --SAVE_PATH=$SAVE_PATH --SKIP_LIST="['new_headlines']"
